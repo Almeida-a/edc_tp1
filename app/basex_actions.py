@@ -271,14 +271,24 @@ def api_call(city_id: int, key: str = '13bb9df7b5a4c16cbd2a2167bcfc7774',
     request = requests.get(url=url)
     assert request.status_code == 200, f"Request error! Status {request.status_code}"
 
-    xml = request.content.decode(request.encoding)
+    try:
+        xml = request.content.decode(request.encoding)
 
-    if current:
-        # Current xml data type
-        xml_root = validate_current(xml)
-    else:
-        # Forecast xml data type
-        xml_root = validate_forecast(xml)
+        if current:
+            # Current xml data type
+            xml_root = validate_current(xml)
+        else:
+            # Forecast xml data type
+            xml_root = validate_forecast(xml)
+    except:
+        xml = request.content.decode("ISO-8859-1")
+
+        if current:
+            # Current xml data type
+            xml_root = validate_current(xml)
+        else:
+            # Forecast xml data type
+            xml_root = validate_forecast(xml)
 
     if to_string:
         if remove_header:

@@ -19,12 +19,12 @@ session = BaseXClient.Session('localhost', 1984, 'admin', 'admin')
 cities = {}
 all_pt_cities = {}
 
-with open(edc_tp1.settings.TESTING_JSON) as f:
+with open(edc_tp1.settings.TESTING_JSON, encoding="utf-8") as f:
     json_data = json.loads(f.read())
     for jd in json_data:
         cities[jd['name']] = jd['id']
 
-with open(edc_tp1.settings.CITIES_JSON) as f:
+with open(edc_tp1.settings.CITIES_JSON, encoding="utf-8") as f:
     json_data = json.loads(f.read())
     for jd in json_data:
         all_pt_cities[jd['name']] = jd['id']
