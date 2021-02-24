@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from datetime import datetime, timedelta
-from app import basex_actions
+from app import basex_actions, comment
 from lxml import etree
 from BaseXClient import BaseXClient
 import json
@@ -18,6 +18,7 @@ session = BaseXClient.Session('localhost', 1984, 'admin', 'admin')
 # eg: {'Aveiro': 1, 'Lisboa': 2, ...}
 cities = {}
 all_pt_cities = {}
+all_pt_cities_upcase = {}
 
 with open(edc_tp1.settings.TESTING_JSON, encoding="utf-8") as f:
     json_data = json.loads(f.read())
@@ -28,6 +29,7 @@ with open(edc_tp1.settings.CITIES_JSON, encoding="utf-8") as f:
     json_data = json.loads(f.read())
     for jd in json_data:
         all_pt_cities[jd['name']] = jd['id']
+        all_pt_cities_upcase[jd['name'].upper()] = jd['id']
 
 def home(request):
 
@@ -92,12 +94,15 @@ def current_weather(request):
         query2 = session.query(query)
         query2.execute()
 
+    comments = comment.comment(location_id)
+
     context = {
         'title': f'Meteorologia - {datetime.now().day}/{datetime.now().month}',
         'year': datetime.now().year,
         'location': location_str,
         'location_id': location_id,
         'content': html,
+        'comment': comment.comment(),
         'title': "Meteorologia | Tempo Atual"
     }
     return render(request, 'index.html', context)
@@ -203,6 +208,8 @@ def forecast(request, local_id):
     transform = etree.XSLT(xslt_file)
     html = transform(root_forecast)
 
+    comments = comment.comment(location_id)
+
     context = {
         'title': f'Meteorologia - {submit_day.day}/{submit_day.month} - {submit_day.hour}:00',
         'year': datetime.now().year,
@@ -212,6 +219,7 @@ def forecast(request, local_id):
         'temp_fim': submit_day.hour + 3,
         'temp_dia': submit_day.day,
         'content': html,
+        'comment': comments,
         'title': "Meteorologia | Previsão 5 dias"
     }
 
@@ -279,10 +287,12 @@ def get_local_id(city_name) -> tuple:
     :param city_name: string with the name of the city
     :return: tuple of string and int, being the string the name of the city and int the id of the input city
     """
-    city_id = all_pt_cities.get(city_name, 2742611)
+    tmp = city_name.upper()
+    city_id = all_pt_cities_upcase.get(tmp, 2742611)
+    # city_id = all_pt_cities.get(city_name, 2742611)
     if city_id == 2742611:
         return "Aveiro", city_id
-    return city_name, city_id
+    return local_str(city_id)
 
 
 def local_str(city_id) -> tuple:
