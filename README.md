@@ -37,7 +37,12 @@ Versão do PIP: pip 20.2.4
 `pip install -r requirements.txt`
 
 #### 2.1.4 Executar BaseXServer:
+
+##### 2.1.4.1 Em Linux:
 `basexserver`
+##### 2.1.4.2 Em Windows:
+`cd path/to/basex`
+`java -cp BaseX.jar org.basex.BaseXServer`
 
 #### 2.1.5 Usar o Pycharm para executar o projeto ou:
 `python3 manage.py runserver`
