@@ -22,5 +22,7 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('weather', views.current_weather, name='weather'),
     path('forecast/<int:local_id>/', views.forecast, name='forecast'),
-    path('news', views.news, name='news')
+    path('news', views.news, name='news'),
+    path('weather/edit', views.edit_comment, name="edit_comment"),
+    path('weather/remove', views.remove_comment, name="remove_comment"),
 ]

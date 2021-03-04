@@ -5,20 +5,7 @@ from lxml import etree
 session = BaseXClient.Session('localhost', 1984, 'admin', 'admin')
 
 
-def comment(local_id):
-    comments = [
-        {"name": "Roberto Suben", "comment": "Preferia ver Sol 30 vezes a ter isto", "date": "2020-12-09", "id": "0"},
-        {"name": "GilBerto Verde", "comment": "AAAADDDDOORREEEEIIII S2", "date": "2020-12-09", "id": "1"},
-        {"name": "Maria Cantil", "comment": "Meh!", "date": "2020-12-09", "id": "2"},
-        {"name": "Roberto Suben", "comment": "Preferia ver Sol 30 vezes a ter isto", "date": "2020-12-09", "id": "3"},
-        {"name": "GilBerto Verde", "comment": "AAAADDDDOORREEEEIIIIAAAADDDDOORREEEEIIIIAAAADDDDOORREEEEIIII S2",
-         "date": "2020-12-09", "id": "4"},
-        {"name": "Maria Cantil", "comment": "Meh!", "date": "2020-12-09", "id": "5"},
-        {"name": "Roberto Suben", "comment": "Preferia ver Sol 30 vezes a ter isto", "date": "2020-12-09", "id": "6"},
-        {"name": "GilBerto Verde", "comment": "AAAADDDDOORREEEEIIII S2", "date": "2020-12-09", "id": "7"},
-        {"name": "Maria Cantil", "comment": "Meh!", "date": "2020-12-09", "id": "8"}]
-
-    def_local_id = 2742611  # Aveiro
+def comment(local_id, forecast=False):
     query = f'''  
     import module namespace c = "FiveDayForecast.functions";
 
@@ -31,9 +18,9 @@ def comment(local_id):
     comments_dict = elem2dict(root)
     comments_str = ""
     if comments_dict:
-        print(comments_dict['comment'])
+        if type(comments_dict['comment']) is dict:
+            comments_dict['comment'] = [comments_dict['comment']]
         for r in comments_dict['comment']:
-            print(r)
             comments_str += f'''
                                     <div class="col-md-6 mb-4" id="{r["id"]}">
                                         <div class= "card">
@@ -47,11 +34,38 @@ def comment(local_id):
                                                 <p>{r["text"]}</p>
                                             </div>
                                             <div class="card-footer">
-                                                <button type="button" class="btn btn-primary btn-sm btn-block" id="{r["id"]}">Edit</button>
-                                                <button type="button" class="btn btn-danger btn-sm btn-block" id="{r["id"]}">Remove</button>
+                                                <button type="button" class="btn btn-primary btn-sm btn-block" data-toggle="modal" data-target="#EditModal-{r['id']}">Edit</button>
+                                                <div class="modal fade" id="EditModal-{r['id']}" tabindex="-1" role="dialog" aria-labelledby="EditModalLabel-{r['id']}" aria-hidden="true">
+                                              <div class="modal-dialog" role="document">
+                                                <div class="modal-content">
+                                                  <div class="modal-header">
+                                                    <h5 class="modal-title" id="EditModalLabel-{r['id']}">{r['name']}</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"></button>
+                                                  </div>
+                                                  <form action="/weather/edit" method="post">
+                                                  <div class="modal-body">
+                                                    <textarea type="text" name="edit_text" class="form-control" style="max-width: 100%;" placeholder="Comment" spellcheck="True">{r['text']}</textarea>
+                                                    <input id="local" name="local" type="hidden" value="{local_id}">
+                                                    <input id="edit_id" name="edit_id" type="hidden" value="{r['id']}">
+                                                    <input id="edit_forecast" name="edit_forecast" type="hidden" value="{forecast}">
+                                                  </div>
+                                                  <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                    <button type="submit" class="btn btn-primary">Save changes</button>
+                                                  </div>
+                                                  </form>
+                                                </div>
+                                              </div>
+                                            </div>
+                                                <form action="/weather/remove" method="post">
+                                                    <input id="local" name="local" type="hidden" value="{local_id}">
+                                                    <input id="remove_id" name="remove_id" type="hidden" value="{r['id']}">
+                                                    <input id="remove_forecast" name="remove_forecast" type="hidden" value="{forecast}">
+                                                    <button type="submit" class="btn btn-danger btn-sm btn-block" id="{r["id"]}">Remove</button>
+                                                </form>
                                             </div>
                                         </div>
-                                </div>
+                                    </div>
                             '''
     return comments_str
 
@@ -71,7 +85,7 @@ def edit_comment(comment, location_id, id):
     query = f'''  
     import module namespace c = "FiveDayForecast.functions";
 
-    c:edit_comment({comment},{location_id},{id})
+    c:edit_comment(\"{comment}\",{location_id},{id})
                 '''
     query2 = session.query(query)
 

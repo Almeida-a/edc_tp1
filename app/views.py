@@ -1,6 +1,9 @@
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from datetime import datetime, timedelta
+
+from django.views.decorators.csrf import csrf_exempt
+
 from app import basex_actions, comment
 from app.forms import *
 from lxml import etree
@@ -32,8 +35,8 @@ with open(edc_tp1.settings.CITIES_JSON, encoding="utf-8") as f:
         all_pt_cities[jd['name']] = jd['id']
         all_pt_cities_upcase[jd['name'].upper()] = jd['id']
 
-def home(request):
 
+def home(request):
     if 'char_field_with_list' in request.POST:
         return current_weather(request)
 
@@ -67,8 +70,8 @@ def home(request):
     }
     return render(request, 'temp.html', context)
 
+
 def current_weather(request):
-    print(request.POST)
     if 'char_field_with_list' in request.POST:
         location_str = request.POST['char_field_with_list']
         if location_str == "":
@@ -76,17 +79,19 @@ def current_weather(request):
             location_str = 'Aveiro'
         location_str, location_id = get_local_id(location_str)
     elif 'c_name' in request.POST:
-        lcl_id = request.POST['local_id']
+        lcl_id = int(request.POST['local_id'])
         c_name = request.POST['c_name']
         c_date = request.POST['c_date']
         c_comment = request.POST['c_comment']
         comment.new_comment(lcl_id, c_name, c_comment, c_date)
         location_str, location_id = local_str(lcl_id)
+    elif 'local' in request.POST:
+        location_id = int(request.POST['local'])
+        location_str, location_id = local_str(location_id)
     else:
         location_str = 'Aveiro'
         location_str, location_id = get_local_id(location_str)
     # create or open db
-
     database()
 
     root_current = basex_actions.current_weather(location_str)
@@ -122,7 +127,7 @@ def current_weather(request):
         'content': html,
         'comment': comments,
         'title': "Meteorologia | Tempo Atual",
-        'date' : date,
+        'date': date,
     }
     return render(request, 'index.html', context)
 
@@ -136,6 +141,7 @@ def forecast(request, local_id):
     submit_day = now - remove_hour  # Dia de hoje (sem horas)
     hour_of_today -= (hour_of_today % 3)  # Hora atual divisível por 3 anterior
     now = submit_day + timedelta(hours=hour_of_today)
+    print(request.POST)
     if 'inputDia' in request.POST and 'inputHora' in request.POST:
         dia = request.POST['inputDia']
         hora = request.POST['inputHora']
@@ -206,7 +212,6 @@ def forecast(request, local_id):
 
     location_str, location_id = local_str(local_id)
 
-
     # create or open db
     database()
 
@@ -227,7 +232,7 @@ def forecast(request, local_id):
     transform = etree.XSLT(xslt_file)
     html = transform(root_forecast)
 
-    comments = comment.comment(location_id)
+    comments = comment.comment(location_id, forecast=True)
     data_list = tuple(all_pt_cities)
     form = FormForm(datalist=data_list)
 
@@ -249,7 +254,6 @@ def forecast(request, local_id):
 
 
 def news(request):
-
     if 'char_field_with_list' in request.POST:
         return current_weather(request)
 
@@ -288,6 +292,31 @@ def news(request):
     return render(request, 'news.html', context)
 
 
+@csrf_exempt
+def edit_comment(request):
+    if 'edit_text' in request.POST:
+        e_text = request.POST['edit_text']
+        local_id = request.POST['local']
+        e_id = request.POST['edit_id']
+        e_forecast = request.POST['edit_forecast']
+        comment.edit_comment(e_text, local_id, e_id)
+        if e_forecast == "True":
+            return redirect(f"/forecast/{local_id}")
+    return current_weather(request)
+
+
+@csrf_exempt
+def remove_comment(request):
+    if 'remove_id' in request.POST:
+        local_id = request.POST['local']
+        e_id = request.POST['remove_id']
+        e_forecast = request.POST['remove_forecast']
+        comment.remove_comment(local_id, e_id)
+        if e_forecast == "True":
+            return redirect(f"/forecast/{local_id}")
+    return current_weather(request)
+
+
 def database(name: str = "FiveDayForecast"):
     """
 
@@ -313,7 +342,6 @@ def get_local_id(city_name) -> tuple:
     :param city_name: string with the name of the city
     :return: tuple of string and int, being the string the name of the city and int the id of the input city
     """
-    print(city_name)
     tmp = city_name.upper()
     city_id = all_pt_cities_upcase.get(tmp, 2742611)
     # city_id = all_pt_cities.get(city_name, 2742611)
@@ -327,7 +355,6 @@ def local_str(city_id) -> tuple:
     :param city_id: int of the city
     :return: tuple of string and int, being the string the name of the city and int the id of the input city
     """
-
     for k, v in all_pt_cities.items():
         if v == city_id:
             return k, v

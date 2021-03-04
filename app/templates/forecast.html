@@ -39,6 +39,38 @@
         <h2>
         {{ location }} | Dia {{ temp_dia }} das {{ temp_inicio }}:00 às {{ temp_fim }}:00</h2>
         {{ content | safe }}
+        <div>
+                <div class="card">
+                    <div class="card-body overflow-auto" style="max-height: 600px">
+                        <h4 class="card-title d-flex justify-content-between align-items-center">
+                        Comments
+                        </h4>
+                        <form class="form-floating" method="post">
+                            {% csrf_token %}
+                            <div class="row g-2">
+                            <div class="col-9">
+                                <input type="text" class="form-control" name="c_name" placeholder="Name">
+                            </div>
+                            <div class="col-3">
+                                <input type="date" class="form-control" name="c_date" value="{{ date }}" readonly="True"></input>
+                            </div>
+                            <div class="col-12 mb-4">
+                                <textarea type="text" class="form-control" name="c_comment" style="max-width: 100%;" placeholder="Comment" spellcheck="True"></textarea>
+                            </div>
+                                <input id="local_id" name="local_id" type="hidden" value="{{ location_id }}">
+                            <div class="col mb-4">
+                                <button class="btn btn-primary" type="submit">Submit</button>
+                            </div>
+                            </div>
+                        </form>
+                        <div class="card-block">
+                             <div class="row">
+                                {{ comment | safe }}
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
     </div>
 </div>
 
