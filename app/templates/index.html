@@ -19,14 +19,15 @@
                             {% csrf_token %}
                             <div class="row g-2">
                             <div class="col-10">
-                                <input type="text" class="form-control" placeholder="Name">
+                                <input type="text" class="form-control" name="c_name" placeholder="Name">
                             </div>
                             <div class="col-2">
-                                <input type="date" class="form-control" value="{{ date }}" readonly="True"></input>
+                                <input type="date" class="form-control" name="c_date" value="{{ date }}" readonly="True"></input>
                             </div>
                             <div class="col-12 mb-4">
-                                <textarea type="text" class="form-control" style="max-width: 100%;" placeholder="Comment" spellcheck="True"></textarea>
+                                <textarea type="text" class="form-control" name="c_comment" style="max-width: 100%;" placeholder="Comment" spellcheck="True"></textarea>
                             </div>
+                                <input id="local_id" name="local_id" type="hidden" value="{{ location_id }}">
                             <div class="col mb-4">
                                 <button class="btn btn-primary" type="submit">Submit</button>
                             </div>

@@ -31,7 +31,9 @@ def comment(local_id):
     comments_dict = elem2dict(root)
     comments_str = ""
     if comments_dict:
+        print(comments_dict['comment'])
         for r in comments_dict['comment']:
+            print(r)
             comments_str += f'''
                                     <div class="col-md-6 mb-4" id="{r["id"]}">
                                         <div class= "card">
@@ -45,6 +47,7 @@ def comment(local_id):
                                                 <p>{r["text"]}</p>
                                             </div>
                                             <div class="card-footer">
+                                                <button type="button" class="btn btn-primary btn-sm btn-block" id="{r["id"]}">Edit</button>
                                                 <button type="button" class="btn btn-danger btn-sm btn-block" id="{r["id"]}">Remove</button>
                                             </div>
                                         </div>
@@ -57,7 +60,7 @@ def new_comment(local_id, name, data, date):
     query = f'''  
     import module namespace c = "FiveDayForecast.functions";
 
-    c:new_comment({name},{data},{date},{local_id})
+    c:new_comment(\"{name}\",\"{data}\",\"{date}\",{local_id})
                 '''
     query2 = session.query(query)
 

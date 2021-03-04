@@ -68,15 +68,23 @@ def home(request):
     return render(request, 'temp.html', context)
 
 def current_weather(request):
-    print(request)
+    print(request.POST)
     if 'char_field_with_list' in request.POST:
         location_str = request.POST['char_field_with_list']
         if location_str == "":
             messages.warning(request, 'Empty search! Default location shown')
             location_str = 'Aveiro'
+        location_str, location_id = get_local_id(location_str)
+    elif 'c_name' in request.POST:
+        lcl_id = request.POST['local_id']
+        c_name = request.POST['c_name']
+        c_date = request.POST['c_date']
+        c_comment = request.POST['c_comment']
+        comment.new_comment(lcl_id, c_name, c_comment, c_date)
+        location_str, location_id = local_str(lcl_id)
     else:
         location_str = 'Aveiro'
-    location_str, location_id = get_local_id(location_str)
+        location_str, location_id = get_local_id(location_str)
     # create or open db
 
     database()
@@ -305,6 +313,7 @@ def get_local_id(city_name) -> tuple:
     :param city_name: string with the name of the city
     :return: tuple of string and int, being the string the name of the city and int the id of the input city
     """
+    print(city_name)
     tmp = city_name.upper()
     city_id = all_pt_cities_upcase.get(tmp, 2742611)
     # city_id = all_pt_cities.get(city_name, 2742611)
