@@ -1,8 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:element name="weatherdata" type="weatherdataType"/>
+  <xs:complexType name="commentType">
+    <xs:sequence>
+      <xs:element type="xs:int" name="id"/>
+      <xs:element type="xs:string" name="name"/>
+      <xs:element type="xs:string" name="text"/>
+      <xs:element type="xs:string" name="date"/>
+    </xs:sequence>
+  </xs:complexType>
   <xs:complexType name="locationType" mixed="true">
     <xs:sequence>
+      <xs:element type="commentType" name="comment" maxOccurs="unbounded" minOccurs="0"/>
       <xs:element type="xs:string" name="name" minOccurs="0"/>
       <xs:element type="xs:string" name="type" minOccurs="0"/>
       <xs:element type="xs:string" name="country" minOccurs="0"/>
