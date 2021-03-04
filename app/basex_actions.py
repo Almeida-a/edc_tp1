@@ -97,7 +97,7 @@ def add_city_to_db(city: int, base_name: str = "FiveDayForecast"):
     finally:
         xml = api_call(city, to_string=True, remove_header=True)
         print(xml)
-        query = "xquery insert node {} as last into <{}>".format(xml, base_name)
+        query = "xquery insert node {} as last into collection('FiveDayForecast')/{}".format(xml, base_name)
         session.execute(query)
 
         session.close()
@@ -128,14 +128,15 @@ def update_forecast(city_name: str, city_id: int):
         if not city_in_db:
             add_city_to_db(city_id)
 
-        # Delete forecast node
-        session.execute("xquery delete node collection('FiveDayForecast')//weatherdata[location/name='{}']/forecast"
-                        .format(city_name))
+        else:
+            # Delete forecast node
+            session.execute("xquery delete node collection('FiveDayForecast')//weatherdata[location/name='{}']/forecast"
+                            .format(city_name))
 
-        # Insert new forecast node
-        query = "xquery insert node {} as last into collection('FiveDayForecast')//weatherdata[location/name='{}']/forecast".\
-            format(xml_forecast, city_name)
-        session.execute(query)
+            # Insert new forecast node
+            query = "xquery insert node {} as last into collection('FiveDayForecast')//weatherdata[location/name='{}']/forecast".\
+                format(xml_forecast, city_name)
+            session.execute(query)
 
     finally:
         session.close()
