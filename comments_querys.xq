@@ -1,13 +1,13 @@
-module namespace c = "FiveDayForecast_testesapenas.functions";
+module namespace c = "FiveDayForecast.functions";
 
 declare updating function c:new_comment($name,$comment,$date,$location_id) {
-  for $a in collection('FiveDayForecast_testesapenas')//weatherdata
+  for $a in collection('FiveDayForecast')//weatherdata
   let $b := $a/location/location
   let $c := $a//comment 
   where $b/@geobaseid = $location_id
   return insert nodes (
     <comment>
-      <id>{max($c/id)+1}</id>
+      <id>{if (exists($c)) then max($c/id)+1 else 0}</id>
       <name>{$name}</name>
       <text>{$comment}</text>
       <date>{$date}</date>
@@ -16,17 +16,17 @@ declare updating function c:new_comment($name,$comment,$date,$location_id) {
 };
 
 declare function c:new_id($name,$comment,$date,$location_id) as element()* {
-for $a in collection('FiveDayForecast_testesapenas')//weatherdata
+for $a in collection('FiveDayForecast')//weatherdata
 let $b := $a/location/location
 let $c := $a//comment
 where $b/@geobaseid = $location_id
 return(
-  max($c/id)+1
+  if (exists($c)) then max($c/id)+1 else 0
 )
 };
 
 declare updating function c:edit_comment($comment,$location_id, $id) {
-  for $a in collection('FiveDayForecast_testesapenas')//weatherdata/location
+  for $a in collection('FiveDayForecast')//weatherdata/location
   let $b := $a/location
   where $b/@geobaseid = $location_id 
   for $d in $a//comment
@@ -35,7 +35,7 @@ declare updating function c:edit_comment($comment,$location_id, $id) {
 };
 
 declare updating function c:remove_comment($location_id, $id) {
-  for $a in collection('FiveDayForecast_testesapenas')//weatherdata/location
+  for $a in collection('FiveDayForecast')//weatherdata/location
   let $b := $a/location
   where $b/@geobaseid = $location_id
   for $d in $a//comment
@@ -44,7 +44,7 @@ declare updating function c:remove_comment($location_id, $id) {
 };
 
 declare function c:list_comments($location_id) as element()* {
-  for $a in collection('FiveDayForecast_testesapenas')//weatherdata/location
+  for $a in collection('FiveDayForecast')//weatherdata/location
   let $b := $a/location
   where $b/@geobaseid = $location_id
   let $c := $a//comment

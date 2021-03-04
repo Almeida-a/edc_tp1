@@ -1,5 +1,6 @@
 import datetime
 from BaseXClient import BaseXClient
+from lxml import etree
 
 session = BaseXClient.Session('localhost', 1984, 'admin', 'admin')
 
@@ -17,7 +18,7 @@ def comment(local_id):
         {"name": "GilBerto Verde", "comment": "AAAADDDDOORREEEEIIII S2", "date": "2020-12-09", "id": "7"},
         {"name": "Maria Cantil", "comment": "Meh!", "date": "2020-12-09", "id": "8"}]
 
-    def_local_id = 2742611 # Aveiro
+    def_local_id = 2742611  # Aveiro
     query = f'''  
     import module namespace c = "FiveDayForecast.functions";
 
@@ -27,64 +28,86 @@ def comment(local_id):
     xml = query2.execute()
 
     root = etree.XML(xml)
-
-
-
-    date = str(datetime.date.today())
-    comments_str = f'''
-            <div>
-                <div class="card">
-                    <div class="card-body overflow-auto" style="max-height: 600px">
-                        <h4 class="card-title d-flex justify-content-between align-items-center">
-                        Comments
-                        </h4>
-                        <form class="form-floating">
-                            <div class="row g-2">
-                            <div class="col-10">
-                                <input type="text" class="form-control" placeholder="Name">
-                            </div>
-                            <div class="col-2">
-                                <input type="date" class="form-control" value="{date}" readonly="True"></input>
-                            </div>
-                            <div class="col-12 mb-4">
-                                <textarea type="text" class="form-control" style="max-width: 100%;" placeholder="Comment" spellcheck="True"></textarea>
-                            </div>
-                            <div class="col mb-4">
-                                <button class="btn btn-primary" type="submit">Submit</button>
-                            </div>
-                            </div>
-                        </form>
-                        <div class="card-block">
-                             <div class="row">
-                '''
-    for r in comments:
-        comments_str += f'''
-                                <div class="col-md-6 mb-4" id="{r["id"]}">
-                                    <div class= "card">
-                                        <div class="card-body">
-                                            <div class="clearfix"">
-                                                <h5 class="float-left">{r["name"]}</h5> 
-                                                <span class="float-right">
-                                                    <input type="date" class="form-control" value="{r["date"]}" readonly="True"></input>
-                                                </span>
+    comments_dict = elem2dict(root)
+    comments_str = ""
+    if comments_dict:
+        for r in comments_dict['comment']:
+            comments_str += f'''
+                                    <div class="col-md-6 mb-4" id="{r["id"]}">
+                                        <div class= "card">
+                                            <div class="card-body">
+                                                <div class="clearfix"">
+                                                    <h5 class="float-left">{r["name"]}</h5> 
+                                                    <span class="float-right">
+                                                        <input type="date" class="form-control" value="{r["date"]}" readonly="True"></input>
+                                                    </span>
+                                                </div>
+                                                <p>{r["text"]}</p>
                                             </div>
-                                            <p>{r["comment"]}</p>
+                                            <div class="card-footer">
+                                                <button type="button" class="btn btn-danger btn-sm btn-block" id="{r["id"]}">Remove</button>
+                                            </div>
                                         </div>
-                                        <div class="card-footer">
-                                            <button type="button" class="btn btn-danger btn-sm btn-block" id="{r["id"]}">Remove</button>
-                                        </div>
-                                    </div>
-                            </div>
-                        '''
-    comments_str += '''         
-                             </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-                '''
+                                </div>
+                            '''
     return comments_str
 
-def new_comment(local_id, name, data, date):
 
-    return
+def new_comment(local_id, name, data, date):
+    query = f'''  
+    import module namespace c = "FiveDayForecast.functions";
+
+    c:new_comment({name},{data},{date},{local_id})
+                '''
+    query2 = session.query(query)
+
+    query2.execute()
+
+
+def edit_comment(comment, location_id, id):
+    query = f'''  
+    import module namespace c = "FiveDayForecast.functions";
+
+    c:edit_comment({comment},{location_id},{id})
+                '''
+    query2 = session.query(query)
+
+    query2.execute()
+
+
+def remove_comment(location_id, id):
+    query = f'''  
+    import module namespace c = "FiveDayForecast.functions";
+
+    c:remove_comment({location_id},{id})
+                '''
+    query2 = session.query(query)
+
+    query2.execute()
+
+
+def elem2dict(node):
+    """
+    Convert an lxml.etree node tree into a dict.
+    """
+    result = {}
+
+    for element in node.iterchildren():
+        # Remove namespace prefix
+        key = element.tag.split('}')[1] if '}' in element.tag else element.tag
+
+        # Process element as tree element if the inner XML contains non-whitespace content
+        if element.text and element.text.strip():
+            value = element.text
+        else:
+            value = elem2dict(element)
+        if key in result:
+
+            if type(result[key]) is list:
+                result[key].append(value)
+            else:
+                tempvalue = result[key].copy()
+                result[key] = [tempvalue, value]
+        else:
+            result[key] = value
+    return result

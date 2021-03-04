@@ -35,17 +35,21 @@
             </div>
 
             <form action="" class="find-location input-group col-md-8" method="post" >
-                {% csrf_token %}
+
                 <div class="input-group-prepend">
                     <span class="input-group-text bg-dark text-white" id="inputGroup-sizing">Localização</span>
                 </div>
-                <input type="text" class="form-control bg-dark text-white" name="local" placeholder="Procurar localização...">
+{#                <input type="text" class="form-control bg-dark text-white" name="local" placeholder="Procurar localização...">#}
+                {% csrf_token %}
+                {% for field in forms %}
+                    {{ field }}
+                {% endfor %}
                 <div class="input-group-append">
                     <input class="btn btn-outline-light" type="submit" value="Procurar">
                 </div>
-                <hr/>
-                <a class="btn btn-outline-light" href="/forecast/{{ location_id }}" role="button">Previsão para 5 dias</a>
             </form>
+            <hr/>
+            <a class="btn btn-outline-light" href="/forecast/{{ location_id }}" role="button">Previsão para 5 dias</a>
         </nav>
 
         <main role="main">

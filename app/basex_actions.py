@@ -88,7 +88,6 @@ def add_city_to_db(city: int, base_name: str = "FiveDayForecast"):
     :param base_name: database name (forecast as default)
     :return: Adds the city do the database
     """
-
     session = BaseXClient.Session('localhost', 1984, 'admin', 'admin')
 
     try:
@@ -97,6 +96,7 @@ def add_city_to_db(city: int, base_name: str = "FiveDayForecast"):
         session.execute(f"create db {base_name}")
     finally:
         xml = api_call(city, to_string=True, remove_header=True)
+        print(xml)
         query = "xquery insert node {} as last into <{}>".format(xml, base_name)
         session.execute(query)
 
@@ -289,7 +289,6 @@ def api_call(city_id: int, key: str = '13bb9df7b5a4c16cbd2a2167bcfc7774',
         else:
             # Forecast xml data type
             xml_root = validate_forecast(xml)
-
     if to_string:
         if remove_header:
             return xml.split('\n')[-1]

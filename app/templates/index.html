@@ -9,7 +9,37 @@
         <h2>
         {{ location }} | Tempo Atual</h2>
         {{ content | safe }}
-        {{ comment | safe }}
+            <div>
+                <div class="card">
+                    <div class="card-body overflow-auto" style="max-height: 600px">
+                        <h4 class="card-title d-flex justify-content-between align-items-center">
+                        Comments
+                        </h4>
+                        <form class="form-floating" method="post">
+                            {% csrf_token %}
+                            <div class="row g-2">
+                            <div class="col-10">
+                                <input type="text" class="form-control" placeholder="Name">
+                            </div>
+                            <div class="col-2">
+                                <input type="date" class="form-control" value="{{ date }}" readonly="True"></input>
+                            </div>
+                            <div class="col-12 mb-4">
+                                <textarea type="text" class="form-control" style="max-width: 100%;" placeholder="Comment" spellcheck="True"></textarea>
+                            </div>
+                            <div class="col mb-4">
+                                <button class="btn btn-primary" type="submit">Submit</button>
+                            </div>
+                            </div>
+                        </form>
+                        <div class="card-block">
+                             <div class="row">
+                                {{ comment | safe }}
+                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
     </div>
 </div>
 

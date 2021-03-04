@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from datetime import datetime, timedelta
 from app import basex_actions, comment
+from app.forms import *
 from lxml import etree
 from BaseXClient import BaseXClient
 import json
@@ -33,7 +34,7 @@ with open(edc_tp1.settings.CITIES_JSON, encoding="utf-8") as f:
 
 def home(request):
 
-    if 'local' in request.POST:
+    if 'char_field_with_list' in request.POST:
         return current_weather(request)
 
     root_aveiro = basex_actions.current_weather('Aveiro')
@@ -51,6 +52,8 @@ def home(request):
     root_coimbra = basex_actions.current_weather('Coimbra')
     html_coimbra = transform(root_coimbra)
 
+    data_list = tuple(all_pt_cities)
+    form = FormForm(datalist=data_list)
 
     context = {
         'content_aveiro': html_aveiro,
@@ -59,13 +62,15 @@ def home(request):
         'content_coimbra': html_coimbra,
         'location_id': 2742611,
         'year': datetime.now().year,
-        'title': "Meteorologia"
+        'title': "Meteorologia",
+        'forms': form,
     }
     return render(request, 'temp.html', context)
 
 def current_weather(request):
-    if 'local' in request.POST:
-        location_str = request.POST['local']
+    print(request)
+    if 'char_field_with_list' in request.POST:
+        location_str = request.POST['char_field_with_list']
         if location_str == "":
             messages.warning(request, 'Empty search! Default location shown')
             location_str = 'Aveiro'
@@ -95,15 +100,21 @@ def current_weather(request):
         query2.execute()
 
     comments = comment.comment(location_id)
+    data_list = tuple(all_pt_cities)
+    form = FormForm(datalist=data_list)
+
+    date = str(datetime.today().date())
 
     context = {
         'title': f'Meteorologia - {datetime.now().day}/{datetime.now().month}',
         'year': datetime.now().year,
+        'forms': form,
         'location': location_str,
         'location_id': location_id,
         'content': html,
-        'comment': comment.comment(),
-        'title': "Meteorologia | Tempo Atual"
+        'comment': comments,
+        'title': "Meteorologia | Tempo Atual",
+        'date' : date,
     }
     return render(request, 'index.html', context)
 
@@ -160,8 +171,8 @@ def forecast(request, local_id):
         if difference_data.days >= 5 or difference_data.days < 0:
             messages.warning(request, 'Selecione apenas até 5 dias.')
             submit_day = now
-    elif 'local' in request.POST:
-        location_str = request.POST['local']
+    elif 'char_field_with_list' in request.POST:
+        location_str = request.POST['char_field_with_list']
         if location_str == "":
             messages.warning(request, 'Empty search! Default location shown')
             submit_day = now
@@ -209,6 +220,8 @@ def forecast(request, local_id):
     html = transform(root_forecast)
 
     comments = comment.comment(location_id)
+    data_list = tuple(all_pt_cities)
+    form = FormForm(datalist=data_list)
 
     context = {
         'title': f'Meteorologia - {submit_day.day}/{submit_day.month} - {submit_day.hour}:00',
@@ -220,7 +233,8 @@ def forecast(request, local_id):
         'temp_dia': submit_day.day,
         'content': html,
         'comment': comments,
-        'title': "Meteorologia | Previsão 5 dias"
+        'title': "Meteorologia | Previsão 5 dias",
+        'forms': form,
     }
 
     return render(request, 'forecast.html', context)
@@ -228,7 +242,7 @@ def forecast(request, local_id):
 
 def news(request):
 
-    if 'local' in request.POST:
+    if 'char_field_with_list' in request.POST:
         return current_weather(request)
 
     rss = requests.get("http://www.ipma.pt/resources.www/rss/rss.news.ipma.xml")
@@ -253,11 +267,15 @@ def news(request):
     transform = etree.XSLT(xslt_file)
     html = transform(xml)
 
+    data_list = tuple(all_pt_cities)
+    form = FormForm(datalist=data_list)
+
     context = {
         'year': datetime.now().year,
         'rss': html,
         'location_id': 2742611,
-        'title': "Meteorologia | Notícias IPMA"
+        'title': "Meteorologia | Notícias IPMA",
+        'forms': form,
     }
     return render(request, 'news.html', context)
 
