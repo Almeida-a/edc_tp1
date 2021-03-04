@@ -96,7 +96,6 @@ def add_city_to_db(city: int, base_name: str = "FiveDayForecast"):
         session.execute(f"create db {base_name}")
     finally:
         xml = api_call(city, to_string=True, remove_header=True)
-        print(xml)
         query = "xquery insert node {} as last into collection('FiveDayForecast')/{}".format(xml, base_name)
         session.execute(query)
 

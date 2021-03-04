@@ -141,7 +141,6 @@ def forecast(request, local_id):
     submit_day = now - remove_hour  # Dia de hoje (sem horas)
     hour_of_today -= (hour_of_today % 3)  # Hora atual divisível por 3 anterior
     now = submit_day + timedelta(hours=hour_of_today)
-    print(request.POST)
     if 'inputDia' in request.POST and 'inputHora' in request.POST:
         dia = request.POST['inputDia']
         hora = request.POST['inputHora']
