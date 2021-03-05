@@ -206,10 +206,19 @@ def forecast(request, local_id):
 
             return redirect(f'/forecast/{location_id}')
 
+    elif 'c_name' in request.POST:
+        lcl_id = int(request.POST['local_id'])
+        c_name = request.POST['c_name']
+        c_date = request.POST['c_date']
+        c_comment = request.POST['c_comment']
+        comment.new_comment(lcl_id, c_name, c_comment, c_date)
+        location_str, location_id = local_str(lcl_id)
+    elif 'local' in request.POST:
+        location_id = int(request.POST['local'])
+        location_str, location_id = local_str(location_id)
     else:
         submit_day = now
-
-    location_str, location_id = local_str(local_id)
+        location_str, location_id = local_str(local_id)
 
     # create or open db
     database()
@@ -234,6 +243,8 @@ def forecast(request, local_id):
     comments = comment.comment(location_id, forecast=True)
     data_list = tuple(all_pt_cities)
     form = FormForm(datalist=data_list)
+    
+    date = str(datetime.today().date())
 
     context = {
         'title': f'Meteorologia - {submit_day.day}/{submit_day.month} - {submit_day.hour}:00',
@@ -246,6 +257,7 @@ def forecast(request, local_id):
         'content': html,
         'comment': comments,
         'title': "Meteorologia | Previsão 5 dias",
+        'date': date,
         'forms': form,
     }
 
